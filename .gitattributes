@@ -1,0 +1,15 @@
+* text=auto
+# batch scripts must be CRLF in the working tree, or cmd.exe misparses them
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+# shell scripts must stay LF, or sh reads '\r' as part of a command
+*.sh   text eol=lf
+*.py   text eol=lf
+# the delivered binary and the sample: never touch bytes
+*.dll  binary
+*.exe  binary
+*.avs  binary
+*.avs2 binary
+*.avs3 binary
+*.ts   binary
+*.patch text

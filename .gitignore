@@ -1,0 +1,28 @@
+# build intermediates - the same set make-delivery.py strips from the package
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.iobj
+*.ipdb
+*.map
+*.log
+*.res
+*.tlog
+*.sbr
+obj/
+
+# tool and harness scratch
+tmp/
+out/
+__pycache__/
+.vs/
+.idea/
+*.user
+
+# what is deliberately NOT ignored: the source, the scripts, the patches,
+# the sample, and the delivered DLL
+# (MediaFoundationTransform/AVSVideoDecoder/bin/x64/Release/AVSVideoDecoder.dll),
+# whose identity is recorded in MANIFEST.md.  Do not add a bare "x64/" here:
+# it would hide that DLL, and git cannot re-include a file under an ignored
+# directory.

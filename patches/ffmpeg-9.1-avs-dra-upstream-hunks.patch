@@ -1,0 +1,156 @@
+diff --git a/ffmpeg-9.1/configure b/ffmpeg-9.1/configure
+index f5e1fbb..4485147 100644
+--- a/ffmpeg-9.1/configure
++++ b/ffmpeg-9.1/configure
+@@ -3110,7 +3110,7 @@ av1_decoder_select="cbs_av1 itut_t35"
+ bink_decoder_select="blockdsp hpeldsp"
+ binkaudio_dct_decoder_select="wma_freqs"
+ binkaudio_rdft_decoder_select="wma_freqs"
+-cavs_decoder_select="blockdsp golomb h264chroma idctdsp qpeldsp videodsp"
++cavs_decoder_select="libcavsdec"
+ clearvideo_decoder_select="idctdsp"
+ cllc_decoder_select="bswapdsp"
+ comfortnoise_encoder_select="lpc"
+diff --git a/ffmpeg-9.1/libavcodec/Makefile b/ffmpeg-9.1/libavcodec/Makefile
+index 2ea4f94..0f6613a 100644
+--- a/ffmpeg-9.1/libavcodec/Makefile
++++ b/ffmpeg-9.1/libavcodec/Makefile
+@@ -305,8 +305,7 @@ OBJS-$(CONFIG_BMV_VIDEO_DECODER)       += bmvvideo.o
+ OBJS-$(CONFIG_BONK_DECODER)            += bonk.o
+ OBJS-$(CONFIG_BRENDER_PIX_DECODER)     += brenderpix.o
+ OBJS-$(CONFIG_C93_DECODER)             += c93.o
+-OBJS-$(CONFIG_CAVS_DECODER)            += cavs.o cavsdec.o cavsdsp.o \
+-                                          cavsdata.o
++OBJS-$(CONFIG_CAVS_DECODER)            += libcavsdec.o libcavs.o avs_vk.o
+ OBJS-$(CONFIG_CBD2_DPCM_DECODER)       += dpcm.o
+ OBJS-$(CONFIG_CCAPTION_DECODER)        += ccaption_dec.o ass.o
+ OBJS-$(CONFIG_CDGRAPHICS_DECODER)      += cdgraphics.o
+@@ -1251,6 +1250,7 @@ OBJS-$(CONFIG_LIBXEVD_DECODER)            += libxevd.o
+ OBJS-$(CONFIG_LIBXEVE_ENCODER)            += libxeve.o
+ OBJS-$(CONFIG_LIBXVID_ENCODER)            += libxvid.o
+ OBJS-$(CONFIG_LIBZVBI_TELETEXT_DECODER)   += libzvbi-teletextdec.o ass.o
++OBJS-$(CONFIG_LIBDRA_DECODER)             += libdradec.o dradec.o   # DRA (ffmpeg_cavs_dra) integration
+ 
+ # parsers
+ OBJS-$(CONFIG_AAC_LATM_PARSER)         += latm_parser.o
+diff --git a/ffmpeg-9.1/libavcodec/allcodecs.c b/ffmpeg-9.1/libavcodec/allcodecs.c
+index b12dcc4..bc851d2 100644
+--- a/ffmpeg-9.1/libavcodec/allcodecs.c
++++ b/ffmpeg-9.1/libavcodec/allcodecs.c
+@@ -555,6 +555,7 @@ extern const FFCodec ff_wmavoice_decoder;
+ extern const FFCodec ff_ws_snd1_decoder;
+ extern const FFCodec ff_xma1_decoder;
+ extern const FFCodec ff_xma2_decoder;
++extern const FFCodec ff_libdra_decoder;
+ 
+ /* PCM codecs */
+ extern const FFCodec ff_pcm_alaw_encoder;
+diff --git a/ffmpeg-9.1/libavcodec/codec_desc.c b/ffmpeg-9.1/libavcodec/codec_desc.c
+index 70d8df7..0c327dd 100644
+--- a/ffmpeg-9.1/libavcodec/codec_desc.c
++++ b/ffmpeg-9.1/libavcodec/codec_desc.c
+@@ -658,8 +658,9 @@ static const AVCodecDescriptor codec_descriptors[] = {
+         .id        = AV_CODEC_ID_CAVS,
+         .type      = AVMEDIA_TYPE_VIDEO,
+         .name      = "cavs",
+-        .long_name = NULL_IF_CONFIG_SMALL("Chinese AVS (Audio Video Standard) (AVS1-P2, JiZhun profile)"),
++        .long_name = NULL_IF_CONFIG_SMALL("Chinese AVS (Audio Video Standard) AVS1-P2/AVS1-P16 (AVS+)"),
+         .props     = AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_REORDER,
++        .profiles  = NULL_IF_CONFIG_SMALL(ff_cavs_profiles),
+     },
+     {
+         .id        = AV_CODEC_ID_JPEG2000,
+@@ -3792,6 +3793,15 @@ static const AVCodecDescriptor codec_descriptors[] = {
+         .name      = "ivtv_vbi",
+         .long_name = NULL_IF_CONFIG_SMALL("ivtv VBI captions"),
+     },
++    /* DRA (AVS audio, GB/T 20090.6) integration.  This table is searched with bsearch(),
++     * so the entry has to sit where AV_CODEC_ID_DRA falls in the enum (see codec_id.h). */
++    {
++        .id        = AV_CODEC_ID_DRA,
++        .type      = AVMEDIA_TYPE_AUDIO,
++        .name      = "dra",
++        .long_name = NULL_IF_CONFIG_SMALL("DRA audio (AVS audio, GB/T 20090.6)"),
++        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
++    },
+ 
+     /* other kind of codecs and pseudo-codecs */
+     {
+diff --git a/ffmpeg-9.1/libavcodec/codec_id.h b/ffmpeg-9.1/libavcodec/codec_id.h
+index a4e8e30..a94664b 100644
+--- a/ffmpeg-9.1/libavcodec/codec_id.h
++++ b/ffmpeg-9.1/libavcodec/codec_id.h
+@@ -596,6 +596,12 @@ enum AVCodecID {
+     AV_CODEC_ID_ARIB_CAPTION,
+     AV_CODEC_ID_IVTV_VBI,
+ 
++    /* DRA (AVS audio, GB/T 20090.6), added by the ffmpeg_cavs_dra integration.
++     * New codec ids must be appended: libavcodec/version.c has static assertions on
++     * the values of ids scattered through these lists.  This is the last implicitly
++     * numbered position; the block below restarts at an explicit 0x18000. */
++    AV_CODEC_ID_DRA,
++
+     /* other specific kind of codecs (generally used for attachments) */
+     AV_CODEC_ID_FIRST_UNKNOWN = 0x18000,           ///< A dummy ID pointing at the start of various fake codecs.
+     AV_CODEC_ID_TTF = 0x18000,
+diff --git a/ffmpeg-9.1/libavcodec/defs.h b/ffmpeg-9.1/libavcodec/defs.h
+index cd5944b..d6ac97c 100644
+--- a/ffmpeg-9.1/libavcodec/defs.h
++++ b/ffmpeg-9.1/libavcodec/defs.h
+@@ -219,6 +219,13 @@
+ #define AV_PROFILE_APV_4444_12 88
+ #define AV_PROFILE_APV_400_10  99
+ 
++/* AVS1-P2 / AVS1-P16 profiles (GB/T 20090.2) */
++#define AV_PROFILE_CAVS_JIZHUN      0x20
++#define AV_PROFILE_CAVS_SHENZHAN    0x24
++#define AV_PROFILE_CAVS_YIDONG      0x34
++#define AV_PROFILE_CAVS_GUANGDIAN   0x48
++#define AV_PROFILE_CAVS_JIAQIANG    0x88
++
+ 
+ #define AV_LEVEL_UNKNOWN                  -99
+ 
+diff --git a/ffmpeg-9.1/libavcodec/profiles.c b/ffmpeg-9.1/libavcodec/profiles.c
+index d41ba14..5276d48 100644
+--- a/ffmpeg-9.1/libavcodec/profiles.c
++++ b/ffmpeg-9.1/libavcodec/profiles.c
+@@ -228,6 +228,15 @@ const AVProfile ff_apv_profiles[] = {
+     { AV_PROFILE_UNKNOWN },
+ };
+ 
++const AVProfile ff_cavs_profiles[] = {
++    { AV_PROFILE_CAVS_JIZHUN,      "Jizhun"    },
++    { AV_PROFILE_CAVS_SHENZHAN,    "Shenzhan"  },
++    { AV_PROFILE_CAVS_YIDONG,      "Yidong"    },
++    { AV_PROFILE_CAVS_GUANGDIAN,   "Guangdian" },
++    { AV_PROFILE_CAVS_JIAQIANG,    "Jiaqiang"  },
++    { AV_PROFILE_UNKNOWN },
++};
++
+ const AVProfile ff_astc_profiles[] = {
+     { AV_PROFILE_ASTC_LDR_SRGB,      "sRGB LDR"           },
+     { AV_PROFILE_ASTC_LDR,           "Linear LDR"         },
+diff --git a/ffmpeg-9.1/libavcodec/profiles.h b/ffmpeg-9.1/libavcodec/profiles.h
+index 3d4f043..c7c6f4b 100644
+--- a/ffmpeg-9.1/libavcodec/profiles.h
++++ b/ffmpeg-9.1/libavcodec/profiles.h
+@@ -81,5 +81,6 @@ extern const AVProfile ff_arib_caption_profiles[];
+ extern const AVProfile ff_evc_profiles[];
+ extern const AVProfile ff_apv_profiles[];
+ extern const AVProfile ff_astc_profiles[];
++extern const AVProfile ff_cavs_profiles[];
+ 
+ #endif /* AVCODEC_PROFILES_H */
+diff --git a/ffmpeg-9.1/libavformat/mpegts.c b/ffmpeg-9.1/libavformat/mpegts.c
+index a15a256..877625a 100644
+--- a/ffmpeg-9.1/libavformat/mpegts.c
++++ b/ffmpeg-9.1/libavformat/mpegts.c
+@@ -942,6 +942,7 @@ static const StreamType REGD_types[] = {
+     { MKTAG('I', 'D', '3', ' '), AVMEDIA_TYPE_DATA,  AV_CODEC_ID_TIMED_ID3 },
+     { MKTAG('V', 'C', '-', '1'), AVMEDIA_TYPE_VIDEO, AV_CODEC_ID_VC1   },
+     { MKTAG('O', 'p', 'u', 's'), AVMEDIA_TYPE_AUDIO, AV_CODEC_ID_OPUS  },
++    { MKTAG('D', 'R', 'A', '1'), AVMEDIA_TYPE_AUDIO, AV_CODEC_ID_DRA   },  /* DRA (ffmpeg_cavs_dra) integration */
+     { 0 },
+ };
+ 
