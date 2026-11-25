@@ -1,10 +1,10 @@
 # 第三方组件与许可证（事实整理，不是法律意见）
 
-本仓库（`mft_avs`）里我们自己写的源码按 **BSD-3 条款**发布（见 `LICENSE`）。
+本仓库（`mft_avs`）里我们自己写的源码按 **BSD-3 条款**发布（见 `LICENSE`）；这句话只覆盖我们自己写的部分，范围在下面写清。
 但**交付的 `AVSVideoDecoder.dll` 链接了第三方组件**，它们各自的许可证不因本仓库的
 LICENSE 而改变。链接方式决定义务，所以每条都写清证据与出处。
 
-## 1. 这个包不含第三方源码，只含引用
+## 1. 第三方：三个组件是引用，另外包里确实含一份示例源码
 
 | 组件 | 上游 | 我们实际构建的那一份 | 许可证 |
 |---|---|---|---|
@@ -12,6 +12,7 @@ LICENSE 而改变。链接方式决定义务，所以每条都写清证据与出
 | davs2（AVS2 解码） | https://github.com/pkuvcl/davs2 | master 分支快照 tarball：534,423 字节，SHA-256 `1d688e4832822c779053fa69d2dab2651a3f82461e2b74c67d9bae2ef55da134` | **GPL-2.0**（上游 `COPYING`） |
 | uavs3d（AVS3 解码） | https://github.com/uavs3/uavs3d | master 分支快照 tarball：629,324 字节，SHA-256 `f5288ffed9f540a0300fc040b971cb910bf676e2a8441c5aee6495280c0683e8` | BSD 3 条款风格（上游 `COPYING`） |
 | nasm（构建工具，不参与链接） | https://www.nasm.us/ | `deps\bin\nasm.exe` | BSD-2 条款 |
+| Media Foundation Transform 示例（`MediaFoundationTransform\Common\*.h` 与示例工程 `MFTAsynchronous\`、`MFTDirectxAware\`） | Microsoft 的 MFT 示例（随源码树提供，`MediaFoundationTransform\LICENSE` 是它的原文） | 本仓库里带的那一份（源码逐文件参与包根的树指纹） | **public domain**：那份 LICENSE 写的是 free and unencumbered software released into the public domain |
 
 获取方式与构建命令写在 `deps\README.md`（davs2 / uavs3d / nasm）与
 `scripts\build-ffmpeg.cmd`、`scripts\build_ffmpeg.sh`（FFmpeg 9.1 + 我们的补丁）。
@@ -30,6 +31,7 @@ FFmpeg 有正式标签，所以同时给出标签与 tarball 哈希。
 + `scripts\build_ffmpeg.sh:133`：只要 `deps/lib/davs2.lib` 存在就加 `--enable-gpl`。
 + 运行时不需要额外的 DLL：`scripts\dll-imports.py` 读导入表，输出的每一个模块都是
   系统模块（没有 CRT、没有 FFmpeg/davs2/uavs3d 的 DLL）。
++ `MediaFoundationTransform\AVSVideoDecoder\StdAfx.h:69-73` include 了 `..\Common\MFMacro.h`、`MFTrace.h`、`MFClassFactory.h`、`MFCriticSection.h`、`MFRegistry.h` —— 这些是 Microsoft 示例里的基类，它们**编译进了** `AVSVideoDecoder.dll`；按那份 LICENSE 这是 public domain，不构成义务，但也不能算作我们的作品。
 
 因此：**「一个 BSD 许可证的仓库」与「一个静态链接了 GPL-2.0 组件的二进制」是两件事。**
 本仓库的源码可以按 BSD 发布；把 `AVSVideoDecoder.dll` 作为闭源组件分发则需要先确认

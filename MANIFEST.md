@@ -2,8 +2,8 @@
 
 生成命令：`scripts\make-delivery.py`（在开发工作区根目录执行）。
 
-- 文件数：327，合计 35,249,981 字节
-- 全树内容指纹（逐文件 `路径 + SHA-256` 再哈希）：`620cd260813da6548d970dd65ccd40fa6b6816a77aa6b0a4d5f23c63d8532440`
+- 文件数：330，合计 35,256,691 字节
+- 全树内容指纹（逐文件 `路径 + SHA-256` 再哈希）：`a8deb7a6eff72eb0d9b22901bc36db29e4f590c3bc91f4e3cfe7f7a27fb75acb`
 - 第三方源码（FFmpeg / davs2 / uavs3d / nasm）**不在本包内**：引用与我们实际构建的那一份的哈希见 `THIRD-PARTY.md` 与 `deps\README.md`。
 - 包内的自检样本：`samples\CCTV-4-short.avs`（广播片段，版权不属于本项目，见 `THIRD-PARTY.md` 第 4 节）；解码 canary `6c52e2bcd47d12ceee40532e1173eb0e`。
 - 交付的二进制：`dist/MediaFoundationTransform/AVSVideoDecoder/bin/x64/Release/AVSVideoDecoder.dll`
@@ -13,8 +13,8 @@
 
 | 目录 | 文件数 | 字节 |
 |---|---|---|
-| `(包根目录)` | 6 | 26,124 |
-| `.git` | 187 | 10,445,721 |
+| `(包根目录)` | 6 | 27,536 |
+| `.git` | 190 | 10,451,019 |
 | `MediaFoundationTransform` | 79 | 5,982,150 |
 | `bin` | 19 | 16,315,904 |
 | `deps` | 1 | 2,680 |

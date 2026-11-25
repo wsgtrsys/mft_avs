@@ -17,7 +17,7 @@ davs2 / uavs3d 我们用的是 master 分支快照，打包一份没有提交号
 | 路径 | 内容 | 性质 |
 |---|---|---|
 | `MediaFoundationTransform\AVSVideoDecoder\` | 解码器 MFT 源码（视频 + DRA 音频 + 自定义 media source + byte stream handler）、`.vcxproj`/`.sln` | 源码 |
-| `MediaFoundationTransform\Common\` | MFT 样例工程共用的基类（`MFClassFactory.h` 等） | 源码 |
+| `MediaFoundationTransform\Common\` | MFT 示例工程共用的基类（`MFClassFactory.h`、`MFRegistry.h` 等），我们的工程直接 include 它们；另有 `MFTAsynchronous\`、`MFTDirectxAware\` 两个示例工程随树提供、不参与本组件构建；同目录带 `MediaFoundationTransform\LICENSE` | 第三方源码（public domain，见第 6 节） |
 | `MediaFoundationTransform\AVSVideoDecoder\bin\x64\Release\AVSVideoDecoder.dll` | 交付的二进制（SHA-256 见 `MANIFEST.md`） | 构建产物 |
 | `tools\`、`bin\*.exe` | 控制台验证工具（不注册即可驱动 MFT：`DllGetClassObject`） | 源码 + 构建产物 |
 | `patches\ffmpeg-9.1-avs-dra.patch`、`patches\ffmpeg-9.1-avs-dra-upstream-hunks.patch` | 我们的补丁（完整补丁 / 只含可上游化的 hunk）。基线 FFmpeg 9.1 是引用，见第 4 节 | 补丁 |
@@ -168,6 +168,7 @@ scripts\build-mft.cmd                               REM -> ...\bin\x64\Release\A
 ## 6. 许可证
 
 + 本仓库里我们自己写的源码：BSD-3 条款，见 `LICENSE`。
++ `MediaFoundationTransform\Common\` 与随树的两个示例工程：Microsoft 的 MFT 示例，public domain（`MediaFoundationTransform\LICENSE`）。`Common\` 的基类编译进了 DLL（`StdAfx.h:69-73`），所以这条不是"随带文件"而是"在二进制里"。
 + 第三方组件（FFmpeg、davs2、uavs3d、nasm）：各自的许可证不变，位置与链接形态见
   `THIRD-PARTY.md`。其中 davs2 是 GPL-2.0，而它是**静态链接**进 `AVSVideoDecoder.dll` 的——
   这条决定发布形态，属于必须先确认的事（那份文件只是事实整理，不是法律意见）。
