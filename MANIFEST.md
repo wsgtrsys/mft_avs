@@ -2,8 +2,8 @@
 
 生成命令：`scripts\make-delivery.py`（在开发工作区根目录执行）。
 
-- 文件数：330，合计 35,256,691 字节
-- 全树内容指纹（逐文件 `路径 + SHA-256` 再哈希）：`a8deb7a6eff72eb0d9b22901bc36db29e4f590c3bc91f4e3cfe7f7a27fb75acb`
+- 文件数：142，合计 24,854,031 字节
+- 全树内容指纹（逐文件 `路径 + SHA-256` 再哈希）：`2d3f1a35711633b2bc88e5f4effa4cc4629c8a395207fe8ca1867ad43778fbaf`
 - 第三方源码（FFmpeg / davs2 / uavs3d / nasm）**不在本包内**：引用与我们实际构建的那一份的哈希见 `THIRD-PARTY.md` 与 `deps\README.md`。
 - 包内的自检样本：`samples\CCTV-4-short.avs`（广播片段，版权不属于本项目，见 `THIRD-PARTY.md` 第 4 节）；解码 canary `6c52e2bcd47d12ceee40532e1173eb0e`。
 - 交付的二进制：`dist/MediaFoundationTransform/AVSVideoDecoder/bin/x64/Release/AVSVideoDecoder.dll`
@@ -13,14 +13,13 @@
 
 | 目录 | 文件数 | 字节 |
 |---|---|---|
-| `(包根目录)` | 6 | 27,536 |
-| `.git` | 190 | 10,451,019 |
+| `(包根目录)` | 6 | 28,073 |
 | `MediaFoundationTransform` | 79 | 5,982,150 |
 | `bin` | 19 | 16,315,904 |
 | `deps` | 1 | 2,680 |
 | `patches` | 2 | 1,610,251 |
 | `samples` | 1 | 548,376 |
-| `scripts` | 15 | 63,123 |
+| `scripts` | 17 | 110,945 |
 | `tools` | 17 | 255,652 |
 
 下表列出所有可执行、可安装、可校验的产物（源码文件按上面的目录计数，全树逐文件哈希参与开头那条指纹）。校验某一个文件：`certutil -hashfile <文件> SHA256`。
@@ -54,9 +53,11 @@
 | `scripts/build-ffmpeg.cmd` | 1,290 | `f20f8ce51e8e4cb9823146faaa767d8715bd337fe1823dbb2f1b84f85b2b524d` |
 | `scripts/build-mft.cmd` | 7,343 | `501ba5e77ab51a7799662c0c5fe666621b6581b011e6a44d0fe4c8c11e419dd5` |
 | `scripts/build_ffmpeg.sh` | 8,640 | `6d860eca53334537c24de5aae207ee9f3868f1c2347b3bf7889c6f643c6599d5` |
+| `scripts/delivery-check.py` | 21,844 | `a41a30facf390faa98ff197ef467ec551a745bd27f06748b45386d2e521a0d5e` |
 | `scripts/delivery-verify.cmd` | 4,368 | `3e2b9cc17f4144488f5eeaeb4f8bb1e86a709cec31dd81f48205e4aac8045ed8` |
 | `scripts/dll-imports.py` | 4,979 | `7b573ebc2a19e74fd3f2acfbf0473895568f73b6950cbc3f01914c237e58f906` |
 | `scripts/extract_cavs_dra_patch.py` | 2,719 | `d652ccc19f6d95b652903faa72a6581ce8309a54bdff6e19ef6f597a5d97c370` |
+| `scripts/make-delivery.py` | 25,978 | `8dc13b25ac959619eb236ff63f476d1219853838d81ca3c84a70d45fa78b7de0` |
 | `scripts/make-ffmpeg-patch.py` | 4,708 | `f512e90df99cfec88fa81f8e04eb0b3b3c348f33ba0bfdf05433d023c039becf` |
 | `scripts/normalize_patch_paths.py` | 898 | `98c786335e2be63298ebfeb54aaec02da3a69094a1664ab386218b57cbe71911` |
 | `scripts/patch-gate.cmd` | 2,378 | `0fa354c79c9cdc3e950a25d42fe58e0530d0b09d776705c8400afeaa8ea64618` |

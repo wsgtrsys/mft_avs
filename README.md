@@ -27,6 +27,7 @@ davs2 / uavs3d 我们用的是 master 分支快照，打包一份没有提交号
 | `deps\README.md` | davs2 / uavs3d / nasm / FFmpeg 从哪里取、我们编译过的快照哈希、取到之后怎么构建 | 说明（第三方是引用） |
 | `samples\CCTV-4-short.avs` | 一段广播节目的 AVS+ 裸流，只为了让 `verify.cmd` 开箱能做字节级自检 | 第三方内容（版权不属于本项目） |
 | `LICENSE` | 本仓库自研源码的许可证：BSD-3 条款 | 许可证 |
+| `scripts\make-delivery.py`、`scripts\delivery-check.py` | 本目录的定义与自检：前者是"什么属于交付包"的唯一清单，后者用同一份清单反查包里的一切 | 说明（生成器本身） |
 | `MANIFEST.md`、`THIRD-PARTY.md` | 文件清单+哈希、第三方组件与许可证事实 | 说明 |
 | `verify.cmd` | 不注册、不提权，直接检验这个包能不能解码（见第 3 节） | 工具 |
 
@@ -177,10 +178,13 @@ scripts\build-mft.cmd                               REM -> ...\bin\x64\Release\A
 
 ## 7. 与开发工作区的关系
 
-本包不是手工拷贝：`scripts\make-delivery.py` 生成，`scripts\delivery-check.py` 校验
-（源码是否与当前工作区一致、`.vcxproj` 引用的文件是否齐全、第三方引用是否具体到能取回同一份、
-包里的 DLL 是否仍能产生与参考一致的字节）。回归套件（`scripts\run-tests.cmd`，会话 11a–11v）
-在开发工作区执行。
+本包不是手工拷贝：生成它的 `scripts\make-delivery.py` 与自检它的
+`scripts\delivery-check.py` 就在这个目录里，"什么属于交付包"只有这一份清单。
+自检的内容是：源码是否与生成它的工作区一致、`.vcxproj` 引用的文件是否齐全、第三方引用是否
+具体到能取回同一份、包里的 DLL 是否仍能产生与参考一致的字节。
+**在克隆里要跑的是 `verify.cmd`**（不需要工作区、不注册、不提权）；
+`delivery-check.py` 比较的是"工作区 vs 由它生成的 `dist/`"，那是开发工作区里的动作。
+完整回归套件（`scripts\run-tests.cmd`，会话 11a–11v）也在开发工作区执行。
 
 本目录同时就是 git 检出（发布到 `https://github.com/wsgtrsys/mft_avs`）：
 重新打包时 `make-delivery.py` 会把 `\.git` 移到一边再放回来，所以重新生成不会丢历史；
